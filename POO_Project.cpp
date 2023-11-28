@@ -8,5 +8,7 @@ int main()
 
     cout << "test nr 2";
 
+    cout << "test nr 3";
+
     return 0;
 }

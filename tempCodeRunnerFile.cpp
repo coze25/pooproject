@@ -8,9 +8,9 @@ using namespace std;
 class Calculator {
 public:
     long double evaluateExpression(const string& expression) {
-        long double* numbers = new long double [expression.length()];
+        int* numbers = new int [expression.length()];
         int n = 0;
-        char* operators = new char [expression.length()];
+        string* operators = new string [expression.length()];
         int o = 0;
 
         for (int i = 0; i < expression.size(); ++i) {
@@ -28,9 +28,10 @@ public:
                 n++;
                 i = j - 1;
             } 
-            else if (isOperator(expression[i])) {
-                while (o!=0 && hasHigherPrecedence(operators[o -1], expression[i])) {
+            else if (isOperator(&expression[i])) {
+                while (o!=0 && hasHigherPrecedence(operators[o-1], &expression[i])) {
                     applyOperator(numbers, n, operators[o-1]);
+                    operators[o-1] = nullptr;
                     o--;
                 }
                 operators[o] = expression[i];
@@ -41,10 +42,12 @@ public:
                 o++;
             } 
             else if (expression[i] == ')' || expression[i] == ']') {
-                while (o!=0 && operators[o-1] != '(' && operators[o-1] != '[') {
+                while (o!=0 && isDifferent( operators[o-1], '(') && isDifferent( operators[o-1], '[')) {
                     applyOperator(numbers, n, operators[o-1]);
+                    operators[o-1] = nullptr;
                     o--;
                 }
+                operators[o-1] = nullptr;
                 o--;
             }
             else {
@@ -54,6 +57,7 @@ public:
 
         while (o!=0) {
             applyOperator(numbers, n, operators[o-1]);
+            operators[o-1] = nullptr;
             o--;
         }
 
@@ -61,12 +65,12 @@ public:
             throw invalid_argument("Expresie invalida");
         }
 
-        long double result = numbers[n-1];
+        long double x = numbers[n-1];
 
         delete[] numbers;
         delete[] operators;
 
-        return result;
+        return x;
 
     }
 
@@ -93,11 +97,15 @@ public:
     }
 
 private:
-    bool isOperator(char op) {
+    bool isOperator(string opS) {
+        char op;
+        op = opS[0];
         return op == '+' || op == '-' || op == '*' || op == '/' || op == '^' || op == '#';
     }
 
-    int getPrecedence(char op) {
+    int getPrecedence(string opS) {
+        char op;
+        op = opS[0];
         if (op == '^' || op == '#') {
             return 3;
         } else if (op == '*' || op == '/') {
@@ -110,21 +118,26 @@ private:
         }
     };
 
-    bool hasHigherPrecedence(char op1, char op2){
+    bool hasHigherPrecedence(string op1, string op2){
         int precedence1 = getPrecedence(op1);
         int precedence2 = getPrecedence(op2);
         return precedence1 >= precedence2;
     };
 
-    void applyOperator(long double* numbers, int& n, char op) {
+    void applyOperator(int* numbers, int n, string opS) {
         if (n < 2) {
             throw invalid_argument("Nu sunt suficienți de termeni pentru operator");
         }
 
+        char op;
+        op = opS[0];
+
         long double operand2 = numbers[n-1];
+        numbers[n-1] = -1;
         n--;
 
         long double operand1 = numbers[n-1];
+        numbers[n-1] = -1;
         n--;
 
         long double result;
@@ -157,6 +170,10 @@ private:
         numbers[n] = result;
         n++;
     };
+
+    bool isDifferent (string s, char c){
+        return s[0] != c;
+    }
 
     
 };
